@@ -1,0 +1,50 @@
+/* Container utama pencarian */
+.leaflet-control-search {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin-top: 15px !important;
+    margin-right: 15px !important;
+}
+
+/* Membentuk kotak input menjadi lonjong (Pill Shape) */
+.leaflet-control-search .search-input {
+    display: block !important;
+    width: 280px !important;
+    height: 40px !important;
+    padding: 0 45px 0 20px !important;
+    border-radius: 25px !important; /* Membuat sisi membulat/lonjong */
+    border: 1px solid #ccc !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    outline: none !important;
+}
+
+/* Mengatur posisi tombol/ikon kaca pembesar di dalam kotak */
+.leaflet-control-search .search-button {
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 30px !important;
+    height: 30px !important;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E") no-repeat center !important;
+    background-size: 20px !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+
+/* Menghilangkan elemen tooltip/label bawaan yang sering muncul mengganggu */
+.leaflet-control-search .search-tooltip {
+    width: 100% !important;
+    border-radius: 10px !important;
+    margin-top: 5px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Hilangkan garis biru saat input diklik */
+.leaflet-control-search.search-exp {
+    background: transparent !important;
+    border: none !important;
+}

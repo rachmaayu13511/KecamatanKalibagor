@@ -1,0 +1,73 @@
+/* 1. Reset Container Utama agar tidak Kepotong */
+.leaflet-control-layers-expanded {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+    background-color: #ffffff !important;
+    min-width: 180px !important;
+    max-width: 220px !important;
+    max-height: 70vh !important; /* Biar kalau kepanjangan bisa di-scroll */
+    overflow-y: auto !important;
+    padding: 5px !important;
+}
+
+/* 2. Merapatkan Jarak Antar Baris (Line Spacing) */
+.leaflet-control-layers-list {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.leaflet-layerstree-header {
+    display: flex !important;
+    align-items: center !important;
+    padding: 2px 5px !important; /* Sangat rapat atas-bawah */
+    margin-bottom: 0px !important; /* Menghapus jarak antar baris */
+    min-height: 25px !important;
+}
+
+/* 3. Mengecilkan Font & Checkbox agar muat banyak */
+.leaflet-layerstree-header-name {
+    font-size: 12px !important;
+    line-height: 1 !important;
+    padding-left: 5px !important;
+    white-space: nowrap !important;
+}
+
+.leaflet-layerstree-header input {
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 4. Menghilangkan Spasi Liar & Simbol + - */
+.leaflet-layerstree-header-space,
+.leaflet-layerstree-closed,
+.leaflet-layerstree-opened {
+    display: none !important;
+}
+
+/* 5. Merapatkan Indentasi Grup/Anak Layer */
+.leaflet-layerstree-children {
+    padding-left: 12px !important; /* Geser lebih ke kiri */
+    margin: 0 !important;
+    border-left: 1px solid #eee !important;
+}
+
+/* 6. Tombol Hamburger di Kiri */
+.leaflet-control-layers-toggle {
+    width: 36px !important;
+    height: 36px !important;
+    background-color: #fff !important;
+    border-radius: 8px !important;
+    background-image: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-control-layers-toggle::after {
+    content: '≡'; /* Simbol hamburger simpel */
+    font-size: 24px;
+    color: #333;
+}

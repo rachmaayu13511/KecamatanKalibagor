@@ -1,0 +1,1 @@
+var json_Kantorpemerintahan_6 = {"type":"FeatureCollection","name":"Kantorpemerintahan_6","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"id":"1","Nama":"Kantor Balai Desa Kalicupak Lor"},"geometry":{"type":"Point","coordinates":[109.318182730930758,-7.459308019693474]}}]}

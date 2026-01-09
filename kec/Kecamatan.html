@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        
+        <style>
+        html, body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            background-color: #f0f0f0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Hamburger Menu Button */
+        .hamburger-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            transform: translateY(-2px);
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Layer Panel Sidebar */
+        .layer-panel {
+            position: absolute;
+            top: 0;
+            left: -350px;
+            width: 350px;
+            height: 100%;
+            background: white;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            transition: left 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .layer-panel.open {
+            left: 0;
+        }
+
+        .layer-panel-header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .layer-panel-header i {
+            margin-right: 10px;
+        }
+
+        .layer-panel-content {
+            padding: 20px;
+        }
+
+        .layer-section {
+            margin-bottom: 25px;
+        }
+
+        .layer-section-title {
+            font-weight: bold;
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .layer-section-title i {
+            margin-right: 8px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .layer-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .layer-item input[type="checkbox"],
+        .layer-item input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        /* Search Box - Top Right */
+        .search-box {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            z-index: 900;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .search-result-type {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .no-results {
+            padding: 16px;
+            text-align: center;
+            color: #999;
+        }
+
+        /* Navigation Controls - Right Side */
+        .nav-controls {
+            position: absolute;
+            top: 90px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 900;
+        }
+
+        .nav-btn {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #f0f0f0;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            transform: scale(1.05);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Compass - Bottom Right */
+        .compass {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 900;
+        }
+
+        .compass-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .compass-direction {
+            position: absolute;
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .compass-direction.north {
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #e74c3c;
+            font-size: 14px;
+        }
+
+        .compass-direction.south {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .compass-direction.east {
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .compass-direction.west {
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .compass-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to bottom, #e74c3c 0%, #e74c3c 50%, #333 50%, #333 100%);
+            transform: translate(-50%, -50%);
+            transform-origin: center;
+        }
+
+        /* Coordinate Panel - Bottom Center */
+        .coordinate-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            z-index: 900;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .coord-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .coord-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .coord-value {
+            color: #2c3e50;
+        }
+
+        /* Hide original OpenLayers controls */
+        .ol-zoom,
+        .ol-attribution,
+        .layer-switcher,
+        .search-layer {
+            display: none !important;
+        }
+
+        /* Popup styles */
+        .ol-popup {
+            display: none;
+            position: absolute;
+            background-color: white;
+            padding: 15px;
+            border-radius: 12px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            max-width: 400px;
+        }
+
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            position: absolute;
+        }
+
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 50%;
+            margin-left: -10px;
+        }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            text-align: center;
+            width: 24px;
+            height: 24px;
+            color: #999;
+            font-weight: bold;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .ol-popup-closer:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .ol-popup-closer:after {
+            content: "×";
+            font-size: 20px;
+        }
+
+        #popup-content {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 5px;
+            max-height: 60vh;
+            max-width: 70vw;
+            overflow: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layer-panel {
+                width: 280px;
+                left: -280px;
+            }
+
+            .search-box {
+                width: calc(100% - 100px);
+                right: 10px;
+                top: 10px;
+            }
+
+            .nav-controls {
+                top: 70px;
+                right: 10px;
+            }
+
+            .compass {
+                bottom: 100px;
+                right: 10px;
+                width: 60px;
+                height: 60px;
+            }
+
+            .coordinate-panel {
+                font-size: 11px;
+                padding: 8px 16px;
+                bottom: 10px;
+            }
+        }
+        </style>
+
+        <title>Kecamatan Kalibagor</title>
+    </head>
+    <body>
+        <!-- Hamburger Button -->
+        <button class="hamburger-btn" onclick="toggleLayerPanel()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Layer Panel Sidebar -->
+        <div class="layer-panel" id="layerPanel">
+            <div class="layer-panel-header">
+                <i class="fa fa-layer-group"></i> Katalog Layer
+            </div>
+            <div class="layer-panel-content">
+                <div class="layer-section">
+                    <div class="layer-section-title">
+                        <i class="fa fa-map"></i> Base Map
+                    </div>
+                    <div class="layer-item">
+                        <input type="radio" name="basemap" id="basemap1" checked onchange="toggleBasemap(0)">
+                        <label for="basemap1">Google Satellite</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="radio" name="basemap" id="basemap2" onchange="toggleBasemap(1)">
+                        <label for="basemap2">Google Maps</label>
+                    </div>
+                </div>
+
+                <div class="layer-section">
+                    <div class="layer-section-title">
+                        <i class="fa fa-map-marked-alt"></i> Layer Peta
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-kecamatan" checked onchange="toggleLayer(2)">
+                        <label for="layer-kecamatan">Kecamatan Kalibagor</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-desa" checked onchange="toggleLayer(3)">
+                        <label for="layer-desa">Batas Desa</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-jalan" checked onchange="toggleLayer(11)">
+                        <label for="layer-jalan">Jalan</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-jalan-provinsi" checked onchange="toggleLayer(10)">
+                        <label for="layer-jalan-provinsi">Jalan Provinsi</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-sungai" checked onchange="toggleLayer(9)">
+                        <label for="layer-sungai">Sungai</label>
+                    </div>
+                </div>
+
+                <div class="layer-section">
+                    <div class="layer-section-title">
+                        <i class="fa fa-map-pin"></i> Point of Interest
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-kesehatan" checked onchange="toggleLayer(4)">
+                        <label for="layer-kesehatan">🏥 Fasilitas Kesehatan</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-sekolah" checked onchange="toggleLayer(5)">
+                        <label for="layer-sekolah">🏫 Sekolah</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-spbu" checked onchange="toggleLayer(6)">
+                        <label for="layer-spbu">⛽ SPBU</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-ibadah" checked onchange="toggleLayer(7)">
+                        <label for="layer-ibadah">🕌 Tempat Ibadah</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="layer-kantor" checked onchange="toggleLayer(8)">
+                        <label for="layer-kantor">🏛️ Kantor Pemerintahan</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <div style="position: relative;">
+                <input type="text" class="search-input" id="searchInput" placeholder="Cari Kantor Pemerintahan..." 
+                       onkeyup="searchKantorPemerintahan(this.value)" 
+                       onfocus="showSearchResults()" 
+                       style="padding-right: 40px;">
+                <i class="fa fa-search" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+            </div>
+            <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="zoomIn()" title="Zoom In">
+                <i class="fa fa-plus"></i>
+            </button>
+            <button class="nav-btn" onclick="zoomOut()" title="Zoom Out">
+                <i class="fa fa-minus"></i>
+            </button>
+            <button class="nav-btn" onclick="resetView()" title="Reset View">
+                <i class="fa fa-home"></i>
+            </button>
+        </div>
+
+        <!-- Compass -->
+        <div class="compass">
+            <div class="compass-inner">
+                <div class="compass-needle"></div>
+                <div class="compass-direction north">U</div>
+                <div class="compass-direction south">S</div>
+                <div class="compass-direction east">T</div>
+                <div class="compass-direction west">B</div>
+            </div>
+        </div>
+
+        <!-- Coordinate Panel -->
+        <div class="coordinate-panel">
+            <div class="coord-item">
+                <span class="coord-label">Lat:</span>
+                <span class="coord-value" id="lat-display">-7.42205</span>
+            </div>
+            <div class="coord-item">
+                <span class="coord-label">Lng:</span>
+                <span class="coord-value" id="lng-display">109.47636</span>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+        </div>
+
+        <!-- Load your QGIS2Web scripts -->
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="resources/horsey.min.js"></script>
+        <script src="resources/ol-search-layer.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        <script src="layers/KecamatanKalibagor_2.js"></script>
+        <script src="layers/Desa_3.js"></script>
+        <script src="layers/FasilitasKesehatan_4.js"></script>
+        <script src="layers/Sekolah_5.js"></script>
+        <script src="layers/SPBU_6.js"></script>
+        <script src="layers/TempatIbadah_7.js"></script>
+        <script src="layers/KantorPemerintahan_8.js"></script>
+        <script src="layers/SUNGAI_LN_25K_9.js"></script>
+        <script src="layers/JalanProvinsi_10.js"></script>
+        <script src="layers/Jalan_11.js"></script>
+        <script src="styles/KecamatanKalibagor_2_style.js"></script>
+        <script src="styles/Desa_3_style.js"></script>
+        <script src="styles/FasilitasKesehatan_4_style.js"></script>
+        <script src="styles/Sekolah_5_style.js"></script>
+        <script src="styles/SPBU_6_style.js"></script>
+        <script src="styles/TempatIbadah_7_style.js"></script>
+        <script src="styles/KantorPemerintahan_8_style.js"></script>
+        <script src="styles/SUNGAI_LN_25K_9_style.js"></script>
+        <script src="styles/JalanProvinsi_10_style.js"></script>
+        <script src="styles/Jalan_11_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script>
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+
+        <script>
+        // Toggle Layer Panel
+        function toggleLayerPanel() {
+            const panel = document.getElementById('layerPanel');
+            const btn = document.querySelector('.hamburger-btn');
+            panel.classList.toggle('open');
+            btn.classList.toggle('active');
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('layerPanel');
+            const btn = document.querySelector('.hamburger-btn');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (panel.classList.contains('open') && 
+                !panel.contains(event.target) && 
+                !btn.contains(event.target)) {
+                panel.classList.remove('open');
+                btn.classList.remove('active');
+            }
+
+            // Close search results when clicking outside
+            if (!event.target.closest('.search-box')) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // Search functionality - Only for Kantor Pemerintahan
+        let allKantorFeatures = [];
+
+        // Load all Kantor Pemerintahan features when page loads
+        function loadKantorPemerintahan() {
+            allKantorFeatures = [];
+            
+            // Wait for layers to be loaded
+            setTimeout(function() {
+                if (typeof lyr_KantorPemerintahan_8 !== 'undefined') {
+                    const source = lyr_KantorPemerintahan_8.getSource();
+                    if (source && source.getFeatures) {
+                        const features = source.getFeatures();
+                        features.forEach(feature => {
+                            const nama = feature.get('Nama');
+                            if (nama) {
+                                allKantorFeatures.push({
+                                    name: nama,
+                                    feature: feature
+                                });
+                            }
+                        });
+                        console.log('Loaded ' + allKantorFeatures.length + ' Kantor Pemerintahan');
+                    }
+                }
+            }, 1500);
+        }
+
+        // Search Kantor Pemerintahan
+        function searchKantorPemerintahan(searchText) {
+            const searchResults = document.getElementById('searchResults');
+            const searchInput = searchText.toLowerCase().trim();
+            
+            if (searchInput.length < 1) {
+                searchResults.classList.remove('active');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            // Filter features
+            const results = allKantorFeatures.filter(item => 
+                item.name.toLowerCase().includes(searchInput)
+            );
+
+            // Display results
+            if (results.length > 0) {
+                searchResults.innerHTML = results.map((result, idx) => `
+                    <div class="search-result-item" onclick="zoomToKantor(${idx}, '${searchInput}')">
+                        <div class="search-result-name">🏛️ ${result.name}</div>
+                        <div class="search-result-type">Kantor Pemerintahan</div>
+                    </div>
+                `).join('');
+                searchResults.classList.add('active');
+                
+                // Store current search results
+                window.currentSearchResults = results;
+            } else {
+                searchResults.innerHTML = '<div class="no-results">❌ Kantor Pemerintahan tidak ditemukan</div>';
+                searchResults.classList.add('active');
+            }
+        }
+
+        // Show all Kantor Pemerintahan when focus
+        function showSearchResults() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput.value.trim() === '') {
+                // Show all Kantor Pemerintahan
+                const searchResults = document.getElementById('searchResults');
+                
+                if (allKantorFeatures.length > 0) {
+                    searchResults.innerHTML = allKantorFeatures.slice(0, 10).map((result, idx) => `
+                        <div class="search-result-item" onclick="zoomToKantorDirect(${idx})">
+                            <div class="search-result-name">🏛️ ${result.name}</div>
+                            <div class="search-result-type">Kantor Pemerintahan</div>
+                        </div>
+                    `).join('');
+                    searchResults.classList.add('active');
+                    window.currentSearchResults = allKantorFeatures;
+                }
+            }
+        }
+
+        // Zoom to Kantor from search
+        function zoomToKantor(index, searchText) {
+            // Filter again to get correct index
+            const filtered = allKantorFeatures.filter(item => 
+                item.name.toLowerCase().includes(searchText.toLowerCase())
+            );
+            
+            if (filtered[index]) {
+                zoomToFeatureKantor(filtered[index].feature, filtered[index].name);
+            }
+        }
+
+        // Zoom to Kantor direct (from show all)
+        function zoomToKantorDirect(index) {
+            if (allKantorFeatures[index]) {
+                zoomToFeatureKantor(allKantorFeatures[index].feature, allKantorFeatures[index].name);
+            }
+        }
+
+        // Zoom to feature and show popup
+        function zoomToFeatureKantor(feature, name) {
+            if (feature && typeof map !== 'undefined') {
+                const geometry = feature.getGeometry();
+                
+                if (geometry) {
+                    // Get coordinate
+                    const coordinate = geometry.getCoordinates();
+                    
+                    // Zoom to feature
+                    map.getView().animate({
+                        center: coordinate,
+                        zoom: 18,
+                        duration: 1000
+                    });
+
+                    // Show popup
+                    setTimeout(function() {
+                        let popupText = '<table>';
+                        popupText += '<tr><td colspan="2"><strong>' + name + '</strong></td></tr>';
+                        popupText += '<tr><td colspan="2" style="color: #7f8c8d; font-size: 12px;">Kantor Pemerintahan</td></tr>';
+                        
+                        const properties = feature.getProperties();
+                        for (let key in properties) {
+                            if (key !== 'geometry' && key !== 'Nama' && properties[key]) {
+                                popupText += '<tr><th>' + key + '</th><td>' + properties[key] + '</td></tr>';
+                            }
+                        }
+                        popupText += '</table>';
+
+                        content.innerHTML = popupText;
+                        container.style.display = 'block';
+                        overlayPopup.setPosition(coordinate);
+                    }, 500);
+
+                    // Clear search
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchResults').classList.remove('active');
+                }
+            }
+        }
+
+        // Old function for compatibility
+        function handleSearch(event) {
+            searchKantorPemerintahan(event.target.value);
+        }
+
+        // Zoom to selected feature (old function - kept for compatibility)
+        function zoomToFeature(index) {
+            if (window.currentSearchResults && window.currentSearchResults[index]) {
+                zoomToFeatureKantor(
+                    window.currentSearchResults[index].feature,
+                    window.currentSearchResults[index].name
+                );
+            }
+        }
+
+        // Initialize search when page loads
+        window.addEventListener('load', function() {
+            loadKantorPemerintahan();
+        });
+
+        // Toggle Basemap
+        function toggleBasemap(index) {
+            if (typeof layersList !== 'undefined') {
+                layersList[0].setVisible(index === 0);
+                layersList[1].setVisible(index === 1);
+            }
+        }
+
+        // Toggle Layer
+        function toggleLayer(index) {
+            if (typeof layersList !== 'undefined') {
+                const layer = layersList[index];
+                if (layer) {
+                    layer.setVisible(!layer.getVisible());
+                }
+            }
+        }
+
+        // Zoom Controls
+        function zoomIn() {
+            if (typeof map !== 'undefined') {
+                const view = map.getView();
+                const zoom = view.getZoom();
+                view.animate({ zoom: zoom + 1, duration: 250 });
+            }
+        }
+
+        function zoomOut() {
+            if (typeof map !== 'undefined') {
+                const view = map.getView();
+                const zoom = view.getZoom();
+                view.animate({ zoom: zoom - 1, duration: 250 });
+            }
+        }
+
+        function resetView() {
+            if (typeof map !== 'undefined') {
+                map.getView().fit([12155501.918182, -841243.221505, 12182433.265599, -828809.512456], map.getSize());
+            }
+        }
+
+        // Update Coordinates
+        if (typeof map !== 'undefined') {
+            map.on('pointermove', function(evt) {
+                const coords = ol.proj.toLonLat(evt.coordinate);
+                document.getElementById('lng-display').textContent = coords[0].toFixed(5);
+                document.getElementById('lat-display').textContent = coords[1].toFixed(5);
+            });
+        }
+
+        // Wait for map to be initialized
+        setTimeout(function() {
+            if (typeof map !== 'undefined') {
+                map.on('pointermove', function(evt) {
+                    const coords = ol.proj.toLonLat(evt.coordinate);
+                    document.getElementById('lng-display').textContent = coords[0].toFixed(5);
+                    document.getElementById('lat-display').textContent = coords[1].toFixed(5);
+                });
+            }
+        }, 1000);
+        </script>
+    </body>
+</html>
+
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <title>Peta Kecamatan Kalibagor</title>
+        
+        <link href="https://fonts.googleapis.com" rel="preconnect">
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+        <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+        <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+        <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+        <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+        <link href="assets/css/main.css" rel="stylesheet"> 
+
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+
+        <style>
+            /* Layout Dasar */
+            html, body {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden; 
+            }
+
+            /* 1. POSISI PETA */
+            #map {
+                margin-top: 80px !important; 
+                height: calc(100vh - 80px) !important; 
+                width: 100%;
+                z-index: 1;
+            }
+
+            /* 2. TURUNKAN TOOLS (Hamburger & Search Box di Peta) */
+            .hamburger-btn, .search-box {
+                top: 105px !important; 
+                z-index: 1001;
+            }
+
+            /* 3. TURUNKAN TOMBOL NAVIGASI */
+            .nav-controls {
+                top: 175px !important; 
+                z-index: 1001;
+            }
+
+            /* 4. HEADER */
+            #header {
+                z-index: 2000 !important;
+                background-color: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            /* Panel Layer */
+            .layer-panel {
+                top: 80px !important;
+                height: calc(100% - 80px) !important;
+            }
+        </style>
+    </head>
+
+    <body class="index-page">
+        <div id="bubble-wrapper"></div>
+
+        <header id="header" class="header d-flex align-items-center fixed-top">
+            <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+                <a href="index.html" class="logo d-flex align-items-center me-auto">
+  <img src="assets/img/logobms.png" alt="" class="logo-goyang" style="max-height: 40px;"> 
+                    <h1 class="sitename">Kecamatan Kalibagor</h1>
+                </a>
+
+                <nav id="navmenu" class="navmenu">
+                    <ul>
+                        <li><a href="../index.html">Beranda</a></li>
+                        <li class="dropdown">
+                            <a href="#"><span>Peta Desa</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                            <ul>
+                                <li><a href="../wlahar wetan/DesaWlaharWetan.html">Desa Wlahar Wetan</a></li>
+                                <li><a href="../Srowot/DesaSrowot.html">Desa Srowot </a></li>
+                                <li><a href="../Kalibagor/DesaKalibagor.html">Desa Kalibagor </a></li>
+                                <li><a href="../KalicupakLor/DesaKalicupakLor.html">Desa Kalicupak Lor</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="Kecamatan.html" class="active">Peta Kecamatan</a></li>
+                        <li><a href="../tentang.html">Tentang</a></li>                    </ul>
+                    <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+                </nav>
+
+            </div>
+        </header>
+
+        <div id="map"></div>
+
+        <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="assets/vendor/aos/aos.js"></script>
+        <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+        <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+        <script src="assets/js/main.js"></script>
+
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        </body>
+</html>
