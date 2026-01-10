@@ -5,6 +5,11 @@ var map = new ol.Map({
     layers: layersList,
     view: new ol.View({
          maxZoom: 28, minZoom: 1
+		view: new ol.View({
+    maxZoom: 28,
+    minZoom: 1,
+    zoom: 11  // <--- Tambahkan atau ubah baris ini
+})
     })
 });
 
