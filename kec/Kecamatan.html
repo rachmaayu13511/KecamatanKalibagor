@@ -870,11 +870,10 @@
             }
         }
 
-       function resetView() {
+ function resetView() {
     if (typeof map !== 'undefined') {
-        // Ganti dengan koordinat pusat dan level zoom yang lebih rendah (skala lebih luas)
-        map.getView().setCenter([12168967.59, -835026.36]); 
-        map.getView().setZoom(11); // Angka 11 ini perkiraan untuk skala 1:600.000
+        // Kodingan lama yang mengikuti extent QGIS
+        map.getView().fit([12155501.918182, -841243.221505, 12182433.265599, -828809.512456], map.getSize());
     }
 }
         // Update Coordinates
